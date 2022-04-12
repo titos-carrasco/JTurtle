@@ -17,6 +17,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -39,6 +40,8 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     private BufferedImage screen;
     private JFrame win;
 
+    private HashMap<Integer, Integer> keysPressed;
+
     /**
      * Constructor del mundo de tortugas
      *
@@ -52,6 +55,8 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         turtles = new ArrayList<Turtle>();
         bgImage = null;
         this.bgColor = bgColor;
+
+        keysPressed = new HashMap<Integer, Integer>();
 
         background = World.createOpaqueImage(winSize.width, winSize.height);
         Graphics2D g2d = background.createGraphics();
@@ -82,36 +87,14 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     }
 
     /**
-     * Loop principal del mundo de tortugas.
      *
-     * @param fps FPS (frame per seconds) deseados
      */
-    public void mainLoop(int fps) {
-        running = true;
-        long tickExpected = (long) (1000.0 / fps);
-        long tickPrev = System.currentTimeMillis();
-        while (running) {
-            // --- tiempo en ms desde el ciclo anterior
-            long tickElapsed = System.currentTimeMillis() - tickPrev;
-            if (tickElapsed < tickExpected)
-                try {
-                    Thread.sleep(tickExpected - tickElapsed);
-                } catch (InterruptedException e) {
-                }
-
-            long now = System.currentTimeMillis();
-            // double dt = (now - tickPrev) / 1000.0;
-            tickPrev = now;
-
-            // --- render
-            repaint();
-        }
-
-        // eso es todo
+    public void bye() {
         win.dispose();
     }
 
-    void delay(long ms) {
+
+    public void delay(long ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
@@ -144,14 +127,7 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     }
 
     /**
-     * Marca el mundo para ser finalizado en el siguiente 1/fps
-     */
-    public void bye() {
-        running = false;
-    }
-
-    /**
-     * Cambia el fondo del mundoo de tortugas
+     * Cambia el fondo del mundo de tortugas
      *
      * @param color El color del fondo
      */
@@ -192,21 +168,11 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     }
 
     /**
-     * No implementada
+     *
      */
-    public void onKeyPressed() {
-    }
-
-    /**
-     * No implementada
-     */
-    public void onMouseClick() {
-    }
-
-    /**
-     * No implementada
-     */
-    public void onTimer() {
+    public boolean isKeyPressed(int keyCode) {
+        int keyPressed = keysPressed.getOrDefault(keyCode, 0);
+        return keyPressed == 1;
     }
 
     // --------------------------------------------------------------------
@@ -288,7 +254,7 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
 
     @Override
     public void windowClosing(WindowEvent e) {
-        running = false;
+        System.exit(1);
     }
 
     @Override
@@ -339,9 +305,11 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
 
     @Override
     public void keyPressed(KeyEvent e) {
+        keysPressed.put(e.getKeyCode(), 1);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
+        keysPressed.put(e.getKeyCode(), 0);
     }
 }

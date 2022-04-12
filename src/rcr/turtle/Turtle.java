@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -46,6 +47,17 @@ public class Turtle {
         setPosition(0, 0);
     }
 
+    public void dot( int diameter ) {
+        BufferedImage screen = world.getScreen();
+        Point2D.Double p1 = world.toScreenCoordinates(position.x, position.y);
+        Ellipse2D.Double  dot = new Ellipse2D.Double(p1.x-diameter/2, p1.y-diameter/2, diameter, diameter);
+        Graphics2D g2d = screen.createGraphics();
+        g2d.setColor(penColor);
+        g2d.fill(dot);
+        g2d.dispose();
+        world.repaint();
+    }
+
     public void setPosition(double x, double y) {
         if (penDown) {
             BufferedImage screen = world.getScreen();
@@ -64,7 +76,8 @@ public class Turtle {
 
             world.repaint();
 
-            world.delay(40 / speed);
+            if (speed != 0)
+                world.delay(40 / speed);
         } else {
             position.x = x;
             position.y = y;
@@ -75,6 +88,11 @@ public class Turtle {
 
     public Point2D.Double getPosition() {
         return new Point2D.Double(position.x, position.y);
+    }
+
+    public void goHome() {
+        setPosition(0, 0);
+        setHeading(0);
     }
 
     public void setX(double x) {
@@ -142,7 +160,7 @@ public class Turtle {
         circle(radius, 360);
     }
 
-    public void circle(double radius, double angle) {
+    public void circle(double radius, double angle) { // FALTA lo del angulo
         double frac = Math.abs(angle) / 360;
         double steps = 1 + (int) (Math.min(11 + Math.abs(radius) / 6.0, 59.0) * frac);
         double w = 1.0 * angle / steps;
@@ -186,7 +204,7 @@ public class Turtle {
         fill = false;
     }
 
-    public void setVisibility(boolean visible) {
+    public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
