@@ -32,13 +32,13 @@ import javax.swing.JPanel;
 public class World extends JPanel implements KeyListener, MouseListener, WindowListener {
     private static final long serialVersionUID = -1056589405033868183L;
 
-    private boolean running;
     private ArrayList<Turtle> turtles;
     private BufferedImage background;
-    private BufferedImage bgImage;
-    private Color bgColor;
+    private BufferedImage bgImage = null;
     private BufferedImage screen;
+    private BufferedImage shapes;
     private JFrame win;
+    private Color bgColor;
 
     private HashMap<Integer, Integer> keysPressed;
 
@@ -50,24 +50,14 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
      * @param bgColor Color de fondo de a ventana
      */
     public World(Dimension winSize, String title, Color bgColor) {
-
-        running = false;
         turtles = new ArrayList<Turtle>();
-        bgImage = null;
         this.bgColor = bgColor;
-
         keysPressed = new HashMap<Integer, Integer>();
 
         background = World.createOpaqueImage(winSize.width, winSize.height);
-        Graphics2D g2d = background.createGraphics();
-        g2d.setBackground(bgColor);
-        g2d.clearRect(0, 0, background.getWidth(), background.getHeight());
-
+        shapes = World.createTranslucentImage(winSize.width, winSize.height);
         screen = World.createTranslucentImage(winSize.width, winSize.height);
-        g2d = screen.createGraphics();
-        g2d.setBackground(new Color(255, 255, 255, 0));
-        g2d.clearRect(0, 0, screen.getWidth(), screen.getHeight());
-        g2d.dispose();
+        clearScreen();
 
         addKeyListener(this);
         addMouseListener(this);
@@ -82,8 +72,17 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         win.pack();
         win.setResizable(false);
         win.setVisible(true);
+    }
 
-        repaint();
+    /**
+     * Crea una tortuga dentro de este mundo
+     *
+     * @return La tortuga creada
+     */
+    public Turtle createTurtle() {
+        Turtle turtle = new Turtle(this);
+        turtles.add(turtle);
+        return turtle;
     }
 
     /**
@@ -93,36 +92,13 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         win.dispose();
     }
 
-
+    /**
+     * @param ms
+     */
     public void delay(long ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
-        }
-
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-        Graphics2D g2d = background.createGraphics();
-        g2d.setBackground(bgColor);
-        g2d.clearRect(0, 0, background.getWidth(), background.getHeight());
-        if (bgImage != null)
-            g2d.drawImage(bgImage, 0, 0, null);
-        g2d.dispose();
-        g.drawImage(background, 0, 0, null);
-
-        g.drawImage(screen, 0, 0, null);
-        for (Turtle turtle : turtles) {
-            BufferedImage shape = turtle.getShape();
-            if (shape == null)
-                continue;
-
-            Point2D.Double p = toScreenCoordinates(turtle.getX(), turtle.getY());
-            p.x -= shape.getWidth() / 2;
-            p.y -= shape.getHeight() / 2;
-
-            g.drawImage(shape, (int) p.x, (int) p.y, null);
         }
     }
 
@@ -133,6 +109,7 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
      */
     public void setBgColor(Color color) {
         bgColor = color;
+        repaint();
     }
 
     /**
@@ -150,21 +127,10 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
      */
     public void clearScreen() {
         Graphics2D g2d = screen.createGraphics();
-        g2d.setBackground(new Color(255, 255, 255, 0));
+        g2d.setBackground(new Color(0, 0, 0, 0));
         g2d.clearRect(0, 0, screen.getWidth(), screen.getHeight());
         g2d.dispose();
         repaint();
-    }
-
-    /**
-     * Crea una tortuga dentro de este mundo
-     *
-     * @return La tortuga creada
-     */
-    public Turtle createTurtle() {
-        Turtle turtle = new Turtle(this);
-        turtles.add(turtle);
-        return turtle;
     }
 
     /**
@@ -176,6 +142,29 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     }
 
     // --------------------------------------------------------------------
+
+    @Override
+    public void paintComponent(Graphics g) {
+        Graphics2D g2d;
+
+        g2d = background.createGraphics();
+        g2d.setBackground(bgColor);
+        g2d.clearRect(0, 0, background.getWidth(), background.getHeight());
+        if (bgImage != null)
+            g2d.drawImage(bgImage, 0, 0, null);
+        g2d.dispose();
+
+        g2d = shapes.createGraphics();
+        g2d.setBackground(new Color(0, 0, 0, 0));
+        g2d.clearRect(0, 0, shapes.getWidth(), shapes.getHeight());
+        for (Turtle turtle : turtles)
+            turtle.drawShape(g2d);
+        g2d.dispose();
+
+        g.drawImage(background, 0, 0, null);
+        g.drawImage(screen, 0, 0, null);
+        g.drawImage(shapes, 0, 0, null);
+    }
 
     /**
      * @return

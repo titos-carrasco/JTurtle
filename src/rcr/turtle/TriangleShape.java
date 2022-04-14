@@ -1,26 +1,18 @@
 package rcr.turtle;
 
-import java.awt.Polygon;
-
 /**
  * Forma de tortuga triangular
  *
  * @author Roberto Carrasco (titos.carrasco@gmail-com)
  *
  */
-public class TriangleShape extends TurtleShape {
+public class TriangleShape extends PolygonShape {
 
-    /**
-     * Constructor
-     */
-    public TriangleShape() {
+    TriangleShape() {
         super();
-
-        shape = new Polygon();
-        shape.addPoint(4, 4);
-        shape.addPoint(15, 10);
-        shape.addPoint(4, 16);
-        shape.addPoint(4, 4);
+        path.moveTo(10, -5);
+        path.lineTo(0, 11);
+        path.lineTo(-10, -5);
+        path.closePath();
     }
-
 }

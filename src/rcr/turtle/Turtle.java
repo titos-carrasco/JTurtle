@@ -3,59 +3,46 @@ package rcr.turtle;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 
 public class Turtle {
     private World world;
     private Point2D.Double position;
-    private double heading;
-    private boolean visible;
-    private int speed;
+    private double heading = 0;
+    private boolean visible = true;
+    private int speed = 5;
 
-    private boolean penDown;
-    private float penSize;
-    private Color penColor;
+    private boolean penDown = false;
+    private float penSize = 1;
+    private Color penColor = Color.BLACK;
 
-    private Color fillColor;
-    private boolean fill;
+    private int shapeScaleX = 1;
+    private int shapeScaleY = 1;
+    private Color shapeColor = Color.BLACK;;
+    private PolygonShape shape;
 
-    private TurtleShape shape;
-    private int shapeScale;
-    private Color shapeColor;
+    private static HashMap<String, Class<? extends PolygonShape>> shapes;
+
+    static {
+        shapes = new HashMap<String, Class<? extends PolygonShape>>();
+        registerShape("square", SquareShape.class);
+        registerShape("triangle", TriangleShape.class);
+        registerShape("classic", ClassicShape.class);
+    }
 
     Turtle(World world) {
         this.world = world;
         position = new Point2D.Double(0, 0);
-        heading = 0;
-        visible = true;
-        speed = 5;
-
-        penDown = false;
-        penSize = 1;
-        penColor = Color.BLACK;
-
-        fillColor = Color.BLACK;
-        fill = false;
-
-        shape = new TriangleShape();
-        shapeScale = 1;
-        shapeColor = Color.BLACK;
-
+        setShape("classic");
         setPosition(0, 0);
-    }
-
-    public void dot( int diameter ) {
-        BufferedImage screen = world.getScreen();
-        Point2D.Double p1 = world.toScreenCoordinates(position.x, position.y);
-        Ellipse2D.Double  dot = new Ellipse2D.Double(p1.x-diameter/2, p1.y-diameter/2, diameter, diameter);
-        Graphics2D g2d = screen.createGraphics();
-        g2d.setColor(penColor);
-        g2d.fill(dot);
-        g2d.dispose();
-        world.repaint();
     }
 
     public void setPosition(double x, double y) {
@@ -77,7 +64,7 @@ public class Turtle {
             world.repaint();
 
             if (speed != 0)
-                world.delay(40 / speed);
+                world.delay(200 / speed);
         } else {
             position.x = x;
             position.y = y;
@@ -123,10 +110,6 @@ public class Turtle {
         return heading;
     }
 
-    public double getAngle(double x, double y) {
-        return 0;
-    }
-
     public double getDistance(double x, double y) {
         return position.distance(x, y);
     }
@@ -152,10 +135,6 @@ public class Turtle {
         world.repaint();
     }
 
-    public void home() {
-        setPosition(0, 0);
-    }
-
     public void circle(double radius) {
         circle(radius, 360);
     }
@@ -170,6 +149,17 @@ public class Turtle {
             forward(l);
             left(w);
         }
+    }
+
+    public void dot(int diameter) {
+        BufferedImage screen = world.getScreen();
+        Point2D.Double p1 = world.toScreenCoordinates(position.x, position.y);
+        Ellipse2D.Double dot = new Ellipse2D.Double(p1.x - diameter / 2, p1.y - diameter / 2, diameter, diameter);
+        Graphics2D g2d = screen.createGraphics();
+        g2d.setColor(penColor);
+        g2d.fill(dot);
+        g2d.dispose();
+        world.repaint();
     }
 
     public void setPenDown() {
@@ -190,18 +180,6 @@ public class Turtle {
 
     public boolean isPenDown() {
         return penDown;
-    }
-
-    public void setFillColor(Color color) {
-        fillColor = color;
-    }
-
-    public void beginFill() {
-        fill = true;
-    }
-
-    public void endFill() {
-        fill = false;
     }
 
     public void setVisible(boolean visible) {
@@ -226,33 +204,61 @@ public class Turtle {
     }
 
     public void setShape(String name) {
-        if (name.equals("Rectangle"))
-            shape = new RectangleShape();
-        else if (name.equals("Triangle"))
-            shape = new TriangleShape();
-        else
-            System.out.printf("\n Shape '%s' no existe\n", name);
+        shape = createShape( name );
     }
 
-    BufferedImage getShape() {
-        return visible ? shape.getShape(heading, shapeScale, shapeColor) : null;
-    }
-
-    public void setShapeScale(int shapeScale) {
-        this.shapeScale = shapeScale;
+    public void setShapeScale(int scaleX, int scaleY) {
+        this.shapeScaleX = scaleX <= 0 ? 1 : scaleX;
+        this.shapeScaleY = scaleY <= 0 ? 1 : scaleY;
     }
 
     public void setShapeColor(Color color) {
         shapeColor = color;
     }
 
-    public void setOnclick() {
+    void drawShape(Graphics2D g2d) {
+        if (!visible)
+            return;
+
+        // escalamos, rotamos y trasladamos
+        AffineTransform at = new AffineTransform();
+        at.scale(shapeScaleX, shapeScaleY);
+        at.rotate(Math.toRadians(-90 + heading));
+        Path2D.Double cpath = (Path2D.Double) at.createTransformedShape(shape.path);
+
+        // a coordenadas de pantalla
+        Polygon poly = new Polygon();
+        PathIterator pi = cpath.getPathIterator(null);
+        while (!pi.isDone()) {
+            double[] xy = new double[2];
+            pi.currentSegment(xy);
+            Point2D.Double p = world.toScreenCoordinates(xy[0], xy[1]);
+            poly.addPoint((int) (position.x + p.x), (int) (p.y - position.y));
+            pi.next();
+        }
+
+        // trazamos la forma de la tortuga
+        g2d.setColor(shapeColor);
+        g2d.draw(poly);
+        g2d.fill(poly);
     }
 
-    public void setOnRelease() {
+    public static void registerShape(String name, Class<? extends PolygonShape> shapeClass) {
+        shapes.put(name, shapeClass);
     }
 
-    public void setOnDrag() {
+    static PolygonShape createShape(String name) {
+        Class<? extends PolygonShape> polygonShapeClass = shapes.get(name);
+        PolygonShape polygonShape = null;
+
+        try {
+            polygonShape = polygonShapeClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return polygonShape;
     }
 
 }
