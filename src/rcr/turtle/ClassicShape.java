@@ -1,14 +1,17 @@
 package rcr.turtle;
 
 /**
- * Forma de tortuga clasica
+ * Forma clasica de tortuga (tomada de turtle python=
  *
  * @author Roberto Carrasco (titos.carrasco@gmail-com)
  *
  */
 public class ClassicShape extends PolygonShape {
 
-    ClassicShape() {
+    /**
+     * Constructor
+     */
+    public ClassicShape() {
         super();
 
         path.moveTo(0, 0);

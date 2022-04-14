@@ -24,7 +24,7 @@ public class Hilbert {
         t.setShapeColor(Color.BLUE);
         t.setHeading(0);
         t.setPosition(0, 0);
-        t.setSpeed(0);
+        t.setSpeed(10);
 
         t.setPenColor(Color.RED);
         t.setPenSize(5);
@@ -34,17 +34,9 @@ public class Hilbert {
         t.right(135);
         t.setPenDown();
         hilbert(4, 90, 20);
-
         t.setPenUp();
-        //t.setHeading(0);
 
-        int i = 0;
-        while (!world.isKeyPressed(KeyEvent.VK_ESCAPE)) {
-            t.setHeading( i%360 );
-            i++;
-            world.delay(10);
-        }
-
+        world.waitForKey(KeyEvent.VK_ESCAPE);
         world.bye();
     }
 

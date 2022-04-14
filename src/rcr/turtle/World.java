@@ -9,8 +9,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Transparency;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.Point2D;
@@ -24,12 +22,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
- * Clase que representa el mundo de tortugas
+ * Un mundo de tortugas en un sistema cartesiano al estilo Turtle Python
  *
  * @author Roberto Carrasco (titos.carrasco@gmail.com)
  *
  */
-public class World extends JPanel implements KeyListener, MouseListener, WindowListener {
+public class World extends JPanel implements KeyListener, WindowListener {
     private static final long serialVersionUID = -1056589405033868183L;
 
     private ArrayList<Turtle> turtles;
@@ -41,6 +39,7 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     private Color bgColor;
 
     private HashMap<Integer, Integer> keysPressed;
+    private long tickPrev = 0;
 
     /**
      * Constructor del mundo de tortugas
@@ -60,7 +59,6 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         clearScreen();
 
         addKeyListener(this);
-        addMouseListener(this);
         setFocusable(true);
         setSize(winSize);
         setPreferredSize(winSize);
@@ -74,6 +72,8 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         win.setVisible(true);
     }
 
+    // --- Tortugas ---
+
     /**
      * Crea una tortuga dentro de este mundo
      *
@@ -85,25 +85,10 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         return turtle;
     }
 
-    /**
-     *
-     */
-    public void bye() {
-        win.dispose();
-    }
+    // --- Entorno grafico ---
 
     /**
-     * @param ms
-     */
-    public void delay(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-        }
-    }
-
-    /**
-     * Cambia el fondo del mundo de tortugas
+     * Cambia el color de fondo
      *
      * @param color El color del fondo
      */
@@ -113,7 +98,7 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     }
 
     /**
-     * Establece una imagen de fondo para el mundo de tortugas
+     * Establece una imagen de fondo
      *
      * @param fname El nombre del archivo de imagen a utilizar
      */
@@ -134,14 +119,163 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     }
 
     /**
+     * Cierra el entorno grafico de este mundo
+     */
+    public void bye() {
+        win.dispose();
+    }
+
+    /**
+     * Retorna la superficie en donde las tortugas pueden dibujar
      *
+     * @return La superficie en donde dibujar
+     */
+    BufferedImage getScreen() {
+        return screen;
+    }
+
+    /**
+     * Convierte una coordenada desde el sistema cartesiano al sistema de pantalla
+     * (origen en la parte superior izqueirda)
+     *
+     * @param p2d Las coordenadas en el sistema cartesiano
+     *
+     * @return las coordenadas en el sistema de pantalla
+     */
+    Point2D.Double toScreenCoordinates(Point2D.Double p2d) {
+        return toScreenCoordinates(p2d.x, p2d.y);
+    }
+
+    /**
+     * Convierte una coordenada desde el sistema cartesiano al sistema de pantalla
+     * (origen en la parte superior izqueirda)
+     *
+     * @param x La coordenada X en el sistema cartesiano
+     * @param y La coordenada Y en el sistema cartesiano
+     *
+     * @return las coordenadas en el sistema de pantalla
+     */
+    Point2D.Double toScreenCoordinates(double x, double y) {
+        double x0 = screen.getWidth() / 2;
+        double y0 = screen.getHeight() / 2;
+
+        x = x0 + x;
+        y = y0 + y;
+        y = screen.getHeight() - y;
+
+        return new Point2D.Double(x, y);
+    }
+
+    // --- Teclado ---
+
+    /**
+     * Detecta si una tecla se encuentra presionada
+     *
+     * @param keyCode La tecla a detectar (java.awt.event.KeyEvent)
+     *
+     * @return Verdadero si la tecla se encuentra presionada
      */
     public boolean isKeyPressed(int keyCode) {
         int keyPressed = keysPressed.getOrDefault(keyCode, 0);
         return keyPressed == 1;
     }
 
-    // --------------------------------------------------------------------
+    /**
+     * Espera hasta que la tecla especificada es presionada
+     *
+     * @param keyCode La tecla por la cual esperar
+     */
+    public void waitForKey(int keyCode) {
+        while (!isKeyPressed(keyCode))
+            delay(16);
+    }
+
+    // --- Utils ---
+
+    /**
+     * Hace una pausa en la ejecucion
+     *
+     * @param ms Los milisegundos de pausa a realizar
+     */
+    public void delay(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+        }
+    }
+
+    /**
+     * Hace una pausa para completar 1/fps (frames per seconds)
+     *
+     * @param fps Los FPS esperados
+     *
+     * @return El tiempo, en segundos, transcurridos desde la ultima invocacion
+     */
+    public double tick(int fps) {
+        if (tickPrev == 0)
+            tickPrev = System.currentTimeMillis();
+
+        long tickExpected = (long) (1000.0 / fps);
+        long tickElapsed = System.currentTimeMillis() - tickPrev;
+        if (tickElapsed < tickExpected)
+            try {
+                Thread.sleep(tickExpected - tickElapsed);
+            } catch (InterruptedException e) {
+            }
+
+        long now = System.currentTimeMillis();
+        double dt = (now - tickPrev) / 1000.0;
+        tickPrev = now;
+
+        return dt;
+    }
+
+    /**
+     * Crea una imagen sin soporte de transparencia
+     *
+     * @param width  El ancho de a imagen
+     * @param height El alto de la imagen
+     * @return La imagen creada
+     */
+    static BufferedImage createOpaqueImage(int width, int height) {
+        GraphicsConfiguration gconfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
+                .getDefaultConfiguration();
+        return gconfig.createCompatibleImage(width, height, Transparency.OPAQUE);
+    }
+
+    /**
+     * Crea una imagen con soporte de transparencia
+     *
+     * @param width  El ancho de a imagen
+     * @param height El alto de la imagen
+     * @return La imagen creada
+     */
+    static BufferedImage createTranslucentImage(int width, int height) {
+        GraphicsConfiguration gconfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
+                .getDefaultConfiguration();
+        return gconfig.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
+    }
+
+    /**
+     * Construye una imagen a partir de un archivo
+     *
+     * @param fname El archivo con la imagen
+     *
+     * @return La imagen construida
+     */
+    static BufferedImage readImage(String fname) {
+        File f = new File(fname);
+        BufferedImage img = null;
+        try {
+            img = ImageIO.read(f);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return img;
+    }
+
+    // --- Eventos ---
 
     @Override
     public void paintComponent(Graphics g) {
@@ -165,77 +299,6 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
         g.drawImage(screen, 0, 0, null);
         g.drawImage(shapes, 0, 0, null);
     }
-
-    /**
-     * @return
-     */
-    BufferedImage getScreen() {
-        return screen;
-    }
-
-    /**
-     * @param p2d
-     * @return
-     */
-    Point2D.Double toScreenCoordinates(Point2D.Double p2d) {
-        return toScreenCoordinates(p2d.x, p2d.y);
-    }
-
-    /**
-     * @param x
-     * @param y
-     * @return
-     */
-    Point2D.Double toScreenCoordinates(double x, double y) {
-        double x0 = screen.getWidth() / 2;
-        double y0 = screen.getHeight() / 2;
-
-        x = x0 + x;
-        y = y0 + y;
-        y = screen.getHeight() - y;
-
-        return new Point2D.Double(x, y);
-    }
-
-    /**
-     * @param width
-     * @param height
-     * @return
-     */
-    static BufferedImage createOpaqueImage(int width, int height) {
-        GraphicsConfiguration gconfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-                .getDefaultConfiguration();
-        return gconfig.createCompatibleImage(width, height, Transparency.OPAQUE);
-    }
-
-    /**
-     * @param width
-     * @param height
-     * @return
-     */
-    static BufferedImage createTranslucentImage(int width, int height) {
-        GraphicsConfiguration gconfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-                .getDefaultConfiguration();
-        return gconfig.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
-    }
-
-    /**
-     * @param fname
-     * @return
-     */
-    static BufferedImage readImage(String fname) {
-        File f = new File(fname);
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(f);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        return img;
-    }
-
-    // --------------------------------------------------------------------
 
     @Override
     public void windowOpened(WindowEvent e) {
@@ -266,28 +329,6 @@ public class World extends JPanel implements KeyListener, MouseListener, WindowL
     public void windowDeactivated(WindowEvent e) {
     }
 
-    // ------ mouse ------
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-
-    // ------ keyboard ------
     @Override
     public void keyTyped(KeyEvent e) {
     }

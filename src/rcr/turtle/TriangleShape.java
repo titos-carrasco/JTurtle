@@ -1,14 +1,17 @@
 package rcr.turtle;
 
 /**
- * Forma de tortuga triangular
+ * Forma triangular de tortuga (tomada de turtle python=
  *
  * @author Roberto Carrasco (titos.carrasco@gmail-com)
  *
  */
 public class TriangleShape extends PolygonShape {
 
-    TriangleShape() {
+    /**
+     * Constructor
+     */
+    public TriangleShape() {
         super();
         path.moveTo(10, -5);
         path.lineTo(0, 11);

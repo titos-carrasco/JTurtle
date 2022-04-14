@@ -1,14 +1,17 @@
 package rcr.turtle;
 
 /**
- * Forma de tortuga rectangular
+ * Forma rectangular de tortuga (tomada de turtle python=
  *
  * @author Roberto Carrasco (titos.carrasco@gmail-com)
  *
  */
 public class SquareShape extends PolygonShape {
 
-    SquareShape() {
+    /**
+     * Constructor
+     */
+    public SquareShape() {
         super();
 
         path.moveTo(-10, 10);
