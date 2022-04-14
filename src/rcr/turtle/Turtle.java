@@ -45,6 +45,8 @@ public class Turtle {
         registerShape("square", SquareShape.class);
         registerShape("triangle", TriangleShape.class);
         registerShape("classic", ClassicShape.class);
+        registerShape("circle", CircleShape.class);
+        registerShape("turtle", TurtleShape.class);
     }
 
     /**
@@ -420,7 +422,6 @@ public class Turtle {
      *         path.lineTo(10, 10);
      *         path.lineTo(10, -10);
      *         path.lineTo(-10, -10);
-     *         path.closePath();
      *     }
      * }
      * </pre>

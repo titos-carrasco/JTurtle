@@ -17,14 +17,14 @@ public class Hilbert {
     }
 
     public void run() {
-        t.setShape("classic");
+        t.setShape("turtle");
         t.setPenUp();
         t.setVisible(true);
-        t.setShapeScale(3, 3);
+        t.setShapeScale(1,1);
         t.setShapeColor(Color.BLUE);
         t.setHeading(0);
         t.setPosition(0, 0);
-        t.setSpeed(10);
+        t.setSpeed(8);
 
         t.setPenColor(Color.RED);
         t.setPenSize(5);

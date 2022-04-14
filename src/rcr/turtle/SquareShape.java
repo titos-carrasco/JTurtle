@@ -1,7 +1,7 @@
 package rcr.turtle;
 
 /**
- * Forma rectangular de tortuga (tomada de turtle python=
+ * Forma rectangular de tortuga (tomada de turtle python)
  *
  * @author Roberto Carrasco (titos.carrasco@gmail-com)
  *
@@ -18,6 +18,5 @@ public class SquareShape extends PolygonShape {
         path.lineTo(10, 10);
         path.lineTo(10, -10);
         path.lineTo(-10, -10);
-        path.closePath();
     }
 }
