@@ -27,11 +27,15 @@ public class Turtle {
     private Point2D.Double position;
     private double heading = 0;
     private boolean visible = true;
-    private int speed = 100;
+    private int speed = 10;
 
     private boolean penDown = false;
     private float penSize = 1;
     private Color penColor = Color.BLACK;
+
+    private Path2D.Double fillShape;
+    private Color fillColor = Color.WHITE;
+    private boolean filling = false;
 
     private int shapeScaleX = 1;
     private int shapeScaleY = 1;
@@ -50,7 +54,7 @@ public class Turtle {
     }
 
     /**
-     * Crea una tortuga en las coordenadas (0,0) orientada en 0°
+     * Crea una tortuga en las coordenadas (0,0) orientada en 0ï¿½
      *
      * @param world El mundo al cual pertenece
      */
@@ -85,16 +89,15 @@ public class Turtle {
             position.x = x;
             position.y = y;
 
-            world.repaint();
-
             if (speed != 0)
                 world.delay(200 - speed * 20 + 16);
         } else {
             position.x = x;
             position.y = y;
-
-            world.repaint();
         }
+
+        if (filling)
+            fillShape.lineTo(position.x, position.y);
     }
 
     /**
@@ -118,7 +121,7 @@ public class Turtle {
     }
 
     /**
-     * Posiciona la tortuga en las coordenadas (0,0) orientada en 0°
+     * Posiciona la tortuga en las coordenadas (0,0) orientada en 0ï¿½
      */
     public void goHome() {
         setPosition(0, 0);
@@ -149,46 +152,95 @@ public class Turtle {
     }
 
     /**
-     * Traza un circulo de radio dado
+     * Traza un circulo circunscrito a un poligono de N pasos
      *
-     * @param radius El radio del circulo
+     * @param radius El radio
+     * @param extent El angulo del arco. Utilizar 360 para un circulo completo
+     * @param steps  Numero de pasos a utilizar. Utilizar 0 para la mayor cantidad
+     *               de pasos
      */
-    public void circle(double radius) {
-        circle(radius, 360);
-    }
+    public void circle(double radius, double extent, double steps) {
+        if (extent > 360 || extent < -360)
+            extent = extent % 360;
+        if (extent < 0)
+            extent = 360 + extent;
 
-    /**
-     * Traza un arco de radio y angulo dados
-     *
-     * @param radius El radio del circulo que lo circunscribe
-     * @param angle  El angulo del arco
-     */
-    public void circle(double radius, double angle) {
-        double frac = Math.abs(angle) / 360;
-        double steps = 1 + (int) (Math.min(11 + Math.abs(radius) / 6.0, 59.0) * frac);
-        double w = 1.0 * angle / steps;
+        if (steps <= 0) {
+            double frac = Math.abs(extent) / 360;
+            steps = 1 + (int) (Math.min(11 + Math.abs(radius) / 6.0, 59.0) * frac);
+        }
+
+        double w = 1.0 * extent / steps;
         double w2 = 0.5 * w;
         double l = 2.0 * radius * Math.sin(Math.toRadians(w2) * 1);
+        if (radius < 0) {
+            w = -w;
+            w2 = -w2;
+            l = -l;
+        }
+
+        left(w2);
         for (double i = 0; i < steps; i++) {
             forward(l);
             left(w);
         }
+        left(-w2);
     }
 
     /**
      * Traza un punto de radio dado
      *
      * @param diameter El diametro del punto a trazar
+     * @param color    El color del punto a trazar
      */
-    public void dot(int diameter) {
+    public void dot(int diameter, Color color) {
         BufferedImage screen = world.getScreen();
         Point2D.Double p1 = world.toScreenCoordinates(position.x, position.y);
         Ellipse2D.Double dot = new Ellipse2D.Double(p1.x - diameter / 2, p1.y - diameter / 2, diameter, diameter);
         Graphics2D g2d = screen.createGraphics();
-        g2d.setColor(penColor);
+        g2d.setColor(color);
         g2d.fill(dot);
         g2d.dispose();
-        world.repaint();
+    }
+
+    /**
+     * Da inicio a que todas las operaciones de trazado de linea se inscriban en un
+     * poligono que sera rellenado con el color de relleno
+     */
+    public void beginFill() {
+        fillShape = new Path2D.Double();
+        fillShape.moveTo(position.x, position.y);
+        filling = true;
+    }
+
+    /**
+     * Establece el fin de las operaciones de relleno de las operaciones de trazado
+     * de linea y realiza el relleno del poligono
+     */
+    public void endFill() {
+        filling = false;
+
+        BufferedImage screen = world.getScreen();
+        Graphics2D g2d = screen.createGraphics();
+
+        // a coordenadas de pantalla
+        Polygon poly = new Polygon();
+        PathIterator pi = fillShape.getPathIterator(null);
+        while (!pi.isDone()) {
+            double[] xy = new double[2];
+            pi.currentSegment(xy);
+            Point2D.Double p = world.toScreenCoordinates(xy[0], xy[1]);
+            poly.addPoint((int) (p.x), (int) (p.y));
+            pi.next();
+        }
+
+        // rellenamos el poligono y volvenos a trazar su contorno
+        g2d.setColor(fillColor);
+        g2d.fill(poly);
+        g2d.setColor(penColor);
+        g2d.draw(poly);
+
+        g2d.dispose();
     }
 
     // --- Giros ---
@@ -200,7 +252,6 @@ public class Turtle {
      */
     public void right(double angle) {
         setHeading(heading - angle);
-        world.repaint();
     }
 
     /**
@@ -210,7 +261,6 @@ public class Turtle {
      */
     public void left(double angle) {
         setHeading(heading + angle);
-        world.repaint();
     }
 
     /**
@@ -219,11 +269,11 @@ public class Turtle {
      * @param angle El angulo de rotacion
      */
     public void setHeading(double angle) {
-        angle = angle % 360;
+        if (angle > 360 || angle < -360)
+            angle = angle % 360;
         if (angle < 0)
             angle = 360 + angle;
         heading = angle;
-        world.repaint();
     }
 
     // --- Estado de la tortuga ---
@@ -354,6 +404,26 @@ public class Turtle {
      */
     public void setPenColor(Color color) {
         penColor = color;
+    }
+
+    /**
+     * Establece el color de relleno para cuando estÃ© habilitado
+     *
+     * @param color El color de relleno
+     */
+    public void setFillColor(Color color) {
+        fillColor = color;
+    }
+
+    /**
+     * establece simultaneamente el color del lapiz y el color de relleno
+     *
+     * @param penColor
+     * @param fillColor
+     */
+    public void setColor(Color penColor, Color fillColor) {
+        this.penColor = penColor;
+        this.fillColor = fillColor;
     }
 
     /**

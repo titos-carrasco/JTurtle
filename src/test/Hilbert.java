@@ -12,7 +12,7 @@ public class Hilbert {
     Turtle t;
 
     public Hilbert() {
-        world = new World(new Dimension(640, 480), "Test 01", Color.WHITE);
+        world = new World(new Dimension(640, 480), "Hilbert Curve", Color.WHITE);
         t = world.createTurtle();
     }
 

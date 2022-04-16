@@ -1,7 +1,3 @@
-# JTurtle
-Tortuga tipo "Turtle Pyhton" en Java
-
-```java
 package test;
 
 import java.awt.Color;
@@ -41,12 +37,3 @@ public class RainbowBenzene {
         test.run();
     }
 }
-
-```
-
-
-![](images/Hilbert.png)
-
-![](images/RainbowBenzene.png)
-
-![](images/SnowFlake.png)

@@ -7,6 +7,8 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Transparency;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
@@ -20,6 +22,7 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 /**
  * Un mundo de tortugas en un sistema cartesiano al estilo Turtle Python
@@ -27,7 +30,7 @@ import javax.swing.JPanel;
  * @author Roberto Carrasco (titos.carrasco@gmail.com)
  *
  */
-public class World extends JPanel implements KeyListener, WindowListener {
+public class World extends JPanel implements KeyListener, WindowListener, ActionListener {
     private static final long serialVersionUID = -1056589405033868183L;
 
     private ArrayList<Turtle> turtles;
@@ -40,6 +43,8 @@ public class World extends JPanel implements KeyListener, WindowListener {
 
     private HashMap<Integer, Integer> keysPressed;
     private long tickPrev = 0;
+
+    private Timer repaintTimer;
 
     /**
      * Constructor del mundo de tortugas
@@ -70,6 +75,9 @@ public class World extends JPanel implements KeyListener, WindowListener {
         win.pack();
         win.setResizable(false);
         win.setVisible(true);
+
+        repaintTimer = new Timer(1000 / 60, this);
+        repaintTimer.start();
     }
 
     // --- Tortugas ---
@@ -94,7 +102,6 @@ public class World extends JPanel implements KeyListener, WindowListener {
      */
     public void setBgColor(Color color) {
         bgColor = color;
-        repaint();
     }
 
     /**
@@ -104,7 +111,6 @@ public class World extends JPanel implements KeyListener, WindowListener {
      */
     public void setBgImage(String fname) {
         bgImage = fname == null ? null : readImage(fname);
-        repaint();
     }
 
     /**
@@ -115,13 +121,13 @@ public class World extends JPanel implements KeyListener, WindowListener {
         g2d.setBackground(new Color(0, 0, 0, 0));
         g2d.clearRect(0, 0, screen.getWidth(), screen.getHeight());
         g2d.dispose();
-        repaint();
     }
 
     /**
      * Cierra el entorno grafico de este mundo
      */
     public void bye() {
+        repaintTimer.stop();
         win.dispose();
     }
 
@@ -186,8 +192,9 @@ public class World extends JPanel implements KeyListener, WindowListener {
      * @param keyCode La tecla por la cual esperar
      */
     public void waitForKey(int keyCode) {
-        while (!isKeyPressed(keyCode))
+        while (!isKeyPressed(keyCode)) {
             delay(16);
+        }
     }
 
     // --- Utils ---
@@ -341,5 +348,10 @@ public class World extends JPanel implements KeyListener, WindowListener {
     @Override
     public void keyReleased(KeyEvent e) {
         keysPressed.put(e.getKeyCode(), 0);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        repaint();
     }
 }
