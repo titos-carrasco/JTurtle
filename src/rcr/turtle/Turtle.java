@@ -39,8 +39,8 @@ public class Turtle {
     private Color fillColor = Color.WHITE;
     private boolean filling = false;
 
-    private int shapeScaleX = 1;
-    private int shapeScaleY = 1;
+    private double shapeScaleX = 1;
+    private double shapeScaleY = 1;
     private Color shapeColor = Color.BLACK;;
     private PolygonShape shape;
 
@@ -481,7 +481,7 @@ public class Turtle {
      * @param scaleX El factor en X
      * @param scaleY El factor en Y
      */
-    public void setShapeScale(int scaleX, int scaleY) {
+    public void setShapeScale(double scaleX, double scaleY) {
         this.shapeScaleX = scaleX <= 0 ? 1 : scaleX;
         this.shapeScaleY = scaleY <= 0 ? 1 : scaleY;
     }
@@ -553,8 +553,8 @@ public class Turtle {
 
         // escalamos, rotamos y trasladamos
         AffineTransform at = new AffineTransform();
-        at.scale(shapeScaleX, shapeScaleY);
         at.rotate(Math.toRadians(-90 + heading));
+        at.scale(shapeScaleX, shapeScaleY);
         Path2D.Double cpath = (Path2D.Double) at.createTransformedShape(shape.path);
 
         // a coordenadas de pantalla
