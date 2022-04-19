@@ -2,6 +2,7 @@ package test;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 
 import rcr.turtle.Turtle;
@@ -13,8 +14,11 @@ public class SnowFlake {
     Turtle t;
 
     public SnowFlake() {
-        world = new World(new Dimension(640, 480), "Snow Flake", Color.WHITE);
+        world = new World(new Dimension(800, 600), "Snow Flake", Color.WHITE);
         t = world.createTurtle();
+
+        String path = world.getRealPath(this, "./resources");
+        world.setBgImage(path + "/Grid 800x600.png");
     }
 
     public void snowflake(double lengthSide, int levels) {
@@ -44,7 +48,14 @@ public class SnowFlake {
             snowflake(length, 4);
             t.right(120);
         }
+        t.setPenUp();
 
+        t.setPosition(-110, -220);
+        t.setPenColor(Color.BLACK);
+        t.write("Presione 'ESC' para finalizar", "Arial", 20, Font.PLAIN);
+
+        t.setPosition(0, -250);
+        t.setHeading(90);
         world.waitForKey(KeyEvent.VK_ESCAPE);
         world.bye();
     }

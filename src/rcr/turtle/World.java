@@ -16,6 +16,8 @@ import java.awt.event.WindowListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -235,6 +237,26 @@ public class World extends JPanel implements KeyListener, WindowListener, Action
         tickPrev = now;
 
         return dt;
+    }
+
+    /**
+     * Obtiene la ruta absoluta del path recibido como parámetro
+     *
+     * @param objClass El directorio de esta clase es utilizado como directorio de
+     *                 inicio
+     * @param path     El path a convertir
+     *
+     * @return El path absoluto
+     */
+    public String getRealPath(Object objClass, String path) {
+        String p = null;
+        try {
+            p = new URI(objClass.getClass().getResource(path).getPath()).getPath();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return p;
     }
 
     /**

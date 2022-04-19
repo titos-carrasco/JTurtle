@@ -2,8 +2,10 @@ package rcr.turtle;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -433,6 +435,22 @@ public class Turtle {
      */
     public boolean isPenDown() {
         return penDown;
+    }
+
+    // -- texto --
+
+    public void write(String text, String fontName, int fontSize, int fontStyle) {
+        Font font = new Font(fontName, fontStyle, fontSize);
+
+        BufferedImage screen = world.getScreen();
+        Graphics2D g2d = screen.createGraphics();
+        Point2D.Double p = world.toScreenCoordinates(position.x, position.y);
+
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setColor(penColor);
+        g2d.setFont(font);
+        g2d.drawString(text, (int) p.x, (int) p.y);
+        g2d.dispose();
     }
 
     // -- Formas de tortuga ---

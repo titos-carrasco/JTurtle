@@ -2,6 +2,7 @@ package test;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 
 import rcr.turtle.Turtle;
@@ -13,8 +14,11 @@ public class Flower {
     Turtle t;
 
     public Flower() {
-        world = new World(new Dimension(640, 480), "Flower", new Color(249, 249, 249));
+        world = new World(new Dimension(800, 600), "Flower", new Color(249, 249, 249));
         t = world.createTurtle();
+
+        String path = world.getRealPath(this, "./resources");
+        world.setBgImage(path + "/Grid 800x600.png");
     }
 
     public void regularShape(double length, double sides, double angle) {
@@ -166,8 +170,14 @@ public class Flower {
 
         t.setColor(Color.BLUE, Color.BLUE);
         slowCircle(20, 8);
+        t.setPenUp();
 
-        t.setVisible(false);
+        t.setPosition(-110, -220);
+        t.setPenColor(Color.BLACK);
+        t.write("Presione 'ESC' para finalizar", "Arial", 20, Font.PLAIN);
+
+        t.setPosition(0, -250);
+        t.setHeading(90);
 
         world.waitForKey(KeyEvent.VK_ESCAPE);
         world.bye();

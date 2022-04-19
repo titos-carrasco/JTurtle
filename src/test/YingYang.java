@@ -2,6 +2,7 @@ package test;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 
 import rcr.turtle.Turtle;
@@ -13,8 +14,11 @@ public class YingYang {
     Turtle t;
 
     public YingYang() {
-        world = new World(new Dimension(640, 480), "Ying Yang", Color.WHITE);
+        world = new World(new Dimension(800, 600), "Ying Yang", Color.WHITE);
         t = world.createTurtle();
+
+        String path = world.getRealPath(this, "./resources");
+        world.setBgImage(path + "/Grid 800x600.png");
     }
 
     public void yin(double radius, Color color1, Color color2) {
@@ -45,7 +49,14 @@ public class YingYang {
     public void run() {
         yin(200, Color.BLACK, Color.WHITE);
         yin(200, Color.WHITE, Color.BLACK);
-        t.setVisible(false);
+        t.setPenUp();
+
+        t.setPosition(-110, -220);
+        t.setPenColor(Color.BLACK);
+        t.write("Presione 'ESC' para finalizar", "Arial", 20, Font.PLAIN);
+
+        t.setPosition(0, -250);
+        t.setHeading(90);
 
         world.waitForKey(KeyEvent.VK_ESCAPE);
         world.bye();
