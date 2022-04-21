@@ -420,8 +420,8 @@ public class Turtle {
     /**
      * establece simultaneamente el color del lapiz y el color de relleno
      *
-     * @param penColor
-     * @param fillColor
+     * @param penColor Color para el lapiz
+     * @param fillColor Color para el relleno
      */
     public void setColor(Color penColor, Color fillColor) {
         this.penColor = penColor;
