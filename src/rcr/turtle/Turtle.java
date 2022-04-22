@@ -21,6 +21,10 @@ import java.util.HashMap;
  * En cada moviento la tortuga deja un trazo dependiendo si su lapiz se
  * encuentra habilitado o no
  *
+ * La tortuga se encuentra en un plano cartesiano con la posicion (0,0) al
+ * centro de la pantalla y los giros son realizados en sentido contrario al
+ * reloj (los 0 grados se encuentran hacia la derecha en el exe X)
+ *
  * @author Roberto Carrasco (titos.carrasco@gmail.com)
  *
  */
@@ -56,7 +60,7 @@ public class Turtle {
     }
 
     /**
-     * Crea una tortuga en las coordenadas (0,0) orientada en 0�
+     * Crea una tortuga en las coordenadas (0,0) orientada en cero grados
      *
      * @param world El mundo al cual pertenece
      */
@@ -123,7 +127,7 @@ public class Turtle {
     }
 
     /**
-     * Posiciona la tortuga en las coordenadas (0,0) orientada en 0�
+     * Posiciona la tortuga en las coordenadas (0,0) orientada en cero grados
      */
     public void goHome() {
         setPosition(0, 0);
@@ -420,7 +424,7 @@ public class Turtle {
     /**
      * establece simultaneamente el color del lapiz y el color de relleno
      *
-     * @param penColor Color para el lapiz
+     * @param penColor  Color para el lapiz
      * @param fillColor Color para el relleno
      */
     public void setColor(Color penColor, Color fillColor) {
@@ -503,14 +507,14 @@ public class Turtle {
      *
      * <pre>
      * public class SquareShape extends PolygonShape {
-     *     public SquareShape() {
-     *         super();
+     *  public SquareShape() {
+     *      super();
      *
-     *         path.moveTo(-10, 10);
-     *         path.lineTo(10, 10);
-     *         path.lineTo(10, -10);
-     *         path.lineTo(-10, -10);
-     *     }
+     *      path.moveTo(-10, 10);
+     *      path.lineTo(10, 10);
+     *      path.lineTo(10, -10);
+     *      path.lineTo(-10, -10);
+     *  }
      * }
      * </pre>
      *

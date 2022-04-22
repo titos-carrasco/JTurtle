@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.3 2020-04-21
+- Cambia shapeScale a double
+- Agrega documentación
+
 ## v0.1.2 2020-04-19
 - World.java: Agrega metodo getRealPath()
 - Turtle.java: Agrega método para mostrar texto en la ventana

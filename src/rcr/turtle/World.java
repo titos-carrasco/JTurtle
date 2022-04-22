@@ -240,7 +240,7 @@ public class World extends JPanel implements KeyListener, WindowListener, Action
     }
 
     /**
-     * Obtiene la ruta absoluta del path recibido como parámetro
+     * Obtiene la ruta absoluta del path recibido como parametro
      *
      * @param objClass El directorio de esta clase es utilizado como directorio de
      *                 inicio
